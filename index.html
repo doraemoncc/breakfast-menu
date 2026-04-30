@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🌈 明天吃什么早餐？</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: #FEF6E4;
+  font-family: "PingFang SC","Microsoft YaHei",sans-serif;
+  min-height: 100vh;
+  padding-bottom: 110px;
+}
+
+/* ====== HEADER ====== */
+.header {
+  text-align: center;
+  padding: 28px 16px 10px;
+}
+.sun {
+  font-size: 3.2rem;
+  display: inline-block;
+  animation: sunBounce 3s ease-in-out infinite;
+}
+@keyframes sunBounce {
+  0%,100% { transform: scale(1) rotate(-5deg); }
+  50% { transform: scale(1.12) rotate(5deg); }
+}
+.header h1 {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #FF6B35;
+  text-shadow: 3px 3px 0 #FFD93D;
+  letter-spacing: 3px;
+  margin-top: 6px;
+}
+.header p { color: #b0a090; font-size: 0.9rem; margin-top: 5px; letter-spacing: 1px; }
+
+/* ====== GRID ====== */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 14px 14px 20px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+@media (min-width: 600px) {
+  .grid { grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 16px; }
+}
+@media (min-width: 900px) {
+  .grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ====== CARD ====== */
+.card {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  border: 3px solid transparent;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  -webkit-user-select: none; user-select: none;
+}
+.card:active { transform: scale(0.97); }
+.card.selected { border-color: var(--ac); transform: scale(1.03); }
+.card.selected .tick { opacity: 1; transform: scale(1) rotate(0deg); }
+
+.card-stripe { height: 8px; background: var(--ac); }
+
+.tick {
+  position: absolute;
+  top: 14px; right: 10px;
+  width: 30px; height: 30px;
+  background: var(--ac);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; color: white;
+  opacity: 0;
+  transform: scale(0) rotate(-40deg);
+  transition: opacity 0.2s, transform 0.3s cubic-bezier(.34,1.56,.64,1);
+  z-index: 3;
+  font-weight: bold;
+}
+
+.card-body { padding: 10px 12px 12px; }
+
+.num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px;
+  background: var(--ac); color: white;
+  border-radius: 50%;
+  font-size: 0.8rem; font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.food-emoji {
+  font-size: 2.4rem;
+  display: block;
+  margin-bottom: 4px;
+  transition: transform 0.2s;
+}
+.card:active .food-emoji { transform: scale(1.2) rotate(-8deg); }
+
+.card-title {
+  font-size: 0.95rem;
+  color: #2d2d2d;
+  font-weight: bold;
+  line-height: 1.35;
+  margin-bottom: 6px;
+}
+
+/* 口味按钮 */
+.flavor-label { font-size: 0.7rem; color: #ccc; margin: 6px 0 3px; }
+.flavors { display: flex; flex-wrap: wrap; gap: 4px; }
+.f-btn {
+  border: 2px solid var(--ac-light);
+  background: white; color: #666;
+  border-radius: 20px;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.f-btn.on { background: var(--ac); color: white; border-color: var(--ac); }
+
+/* 配料 tags */
+.tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.tag {
+  border-radius: 20px;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+}
+.tag-side {
+  background: var(--ac-pale);
+  color: var(--ac-dark);
+  border: 1.5px solid var(--ac-light);
+}
+.tag-fruit {
+  background: #F0FFF4;
+  color: #2D7A3A;
+  border: 1.5px dashed #7DCA8A;
+  cursor: pointer;
+}
+
+/* ====== 确认栏 ====== */
+.bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: white;
+  border-top: 3px solid #FFD93D;
+  padding: 10px 16px 16px;
+  display: flex; align-items: center; gap: 10px;
+  z-index: 100;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+  transform: translateY(110%);
+  transition: transform 0.3s cubic-bezier(.34,1.3,.64,1);
+}
+.bar.show { transform: translateY(0); }
+.bar-info { flex: 1; overflow: hidden; }
+.bar-label { font-size: 0.72rem; color: #bbb; margin-bottom: 1px; }
+.bar-name { font-size: 0.95rem; color: #333; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ok-btn {
+  background: linear-gradient(135deg, #FF6B35, #FF9A3C);
+  color: white; border: none;
+  border-radius: 30px;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  font-weight: bold;
+  box-shadow: 0 4px 14px rgba(255,107,53,0.4);
+  flex-shrink: 0;
+}
+
+/* ====== 庆祝弹窗 ====== */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s;
+}
+.overlay.show { opacity: 1; pointer-events: all; }
+.popup {
+  background: white;
+  border-radius: 28px;
+  padding: 0 0 24px;
+  max-width: 320px; width: 88%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  transform: scale(0.8) translateY(20px);
+  transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
+  overflow: hidden;
+}
+.overlay.show .popup { transform: scale(1) translateY(0); }
+.popup-top {
+  background: linear-gradient(135deg,#FFD93D,#FF6B9D,#4ECDC4);
+  padding: 10px 0 8px;
+  font-size: 1.6rem; letter-spacing: 6px;
+}
+.pop-icon { font-size: 3.8rem; display: block; margin: 16px 0 4px; }
+.pop-title { font-size: 1.5rem; font-weight: 900; color: #FF6B35; letter-spacing: 2px; }
+.pop-result {
+  background: #FFF9EC;
+  border: 2px dashed #FFD93D;
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin: 12px 16px;
+  font-size: 0.88rem;
+  color: #555;
+  line-height: 2;
+  text-align: left;
+}
+.pop-msg { color: #bbb; font-size: 0.85rem; margin-bottom: 14px; }
+.pop-close {
+  background: linear-gradient(135deg, #4ECDC4, #2EBD9B);
+  color: white; border: none;
+  border-radius: 30px;
+  padding: 11px 30px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* ====== 主题颜色（完全预定义，无 color-mix）====== */
+.c1 { --ac:#FF9A3C; --ac-light:#FFD4A0; --ac-pale:#FFF4E6; --ac-dark:#CC6A00; }
+.c2 { --ac:#FF6B9D; --ac-light:#FFB3CF; --ac-pale:#FFF0F6; --ac-dark:#CC2266; }
+.c3 { --ac:#A855F7; --ac-light:#D0A0FA; --ac-pale:#F5EEFF; --ac-dark:#7722CC; }
+.c4 { --ac:#4ECDC4; --ac-light:#A5E8E4; --ac-pale:#EDFAF9; --ac-dark:#1A9990; }
+.c5 { --ac:#F5C400; --ac-light:#FAE07A; --ac-pale:#FFFBEB; --ac-dark:#996B00; }
+.c6 { --ac:#E05C5C; --ac-light:#F0AAAA; --ac-pale:#FFF0F0; --ac-dark:#AA1111; }
+.c7 { --ac:#5BBFFF; --ac-light:#AAD9FF; --ac-pale:#EAF6FF; --ac-dark:#1177CC; }
+.c8 { --ac:#6DBE6D; --ac-light:#AADDAA; --ac-pale:#EDFAED; --ac-dark:#2A7A2A; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="sun">☀️</span>
+  <h1>明天吃什么？</h1>
+  <p>每晚选好，明早稳稳的幸福 🌈</p>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<!-- 确认栏 -->
+<div class="bar" id="bar">
+  <div class="bar-info">
+    <div class="bar-label">你选的是：</div>
+    <div class="bar-name" id="barName">—</div>
+  </div>
+  <button class="ok-btn" onclick="confirmPick()">✅ 就这个！</button>
+</div>
+
+<!-- 弹窗 -->
+<div class="overlay" id="overlay" onclick="mayClose(event)">
+  <div class="popup">
+    <div class="popup-top">🎉🎊🎈🎉🎊🎈</div>
+    <span class="pop-icon" id="popIcon">🎉</span>
+    <div class="pop-title">选好啦！</div>
+    <div class="pop-result" id="popResult"></div>
+    <div class="pop-msg">快去睡觉，明早等你 😴🌙</div>
+    <button class="pop-close" onclick="closeOverlay()">好耶，去睡觉！</button>
+  </div>
+</div>
+
+<script>
+var FRUITS = ['🍎苹果','🍊橘子','🫐蓝莓','🍅西红柿','🥝猕猴桃','🍓草莓'];
+
+var MENU = [
+  {id:1, cls:'c1', emoji:'🍙', title:'饭团', sides:['🦐虾仁球'], hasFruit:true},
+  {id:2, cls:'c2', emoji:'🍗', title:'蜜汁鸡翅', sides:['🍵小米粥','🍅西红柿'], hasFruit:false},
+  {id:3, cls:'c3', emoji:'🍕', title:'小披萨', sides:[], hasFruit:true, flavors:['🍗鸡米花','🥩火腿']},
+  {id:4, cls:'c4', emoji:'🍞', title:'馒头块/片', sides:['🧀奶酪'], hasFruit:true},
+  {id:5, cls:'c5', emoji:'🥞', title:'糖饼', sides:['🥜坚果'], hasFruit:true},
+  {id:6, cls:'c6', emoji:'🌽', title:'玉米+羊肉串', sides:[], hasFruit:true},
+  {id:7, cls:'c7', emoji:'🧇', title:'华夫饼', sides:[], hasFruit:true},
+  {id:8, cls:'c8', emoji:'🥧', title:'蛋挞', sides:[], hasFruit:true},
+];
+
+var selectedId = null;
+
+function randFruits() {
+  var arr = FRUITS.slice();
+  for (var i = arr.length-1; i > 0; i--) {
+    var j = Math.floor(Math.random()*(i+1));
+    var t = arr[i]; arr[i]=arr[j]; arr[j]=t;
+  }
+  return arr.slice(0,2);
+}
+
+function buildCards() {
+  var grid = document.getElementById('grid');
+  MENU.forEach(function(item) {
+    var fruits = item.hasFruit ? randFruits() : [];
+    var card = document.createElement('div');
+    card.className = 'card ' + item.cls;
+    card.dataset.id = item.id;
+
+    var flavorHtml = '';
+    if (item.flavors) {
+      flavorHtml = '<div class="flavor-label">选口味：</div><div class="flavors" onclick="event.stopPropagation()">';
+      item.flavors.forEach(function(f) {
+        flavorHtml += '<button class="f-btn" onclick="toggleFlavor(this)">'+f+'</button>';
+      });
+      flavorHtml += '</div>';
+    }
+
+    var sideTags = item.sides.map(function(s){ return '<span class="tag tag-side">'+s+'</span>'; }).join('');
+    var fruitTags = fruits.map(function(f){ return '<span class="tag tag-fruit" onclick="event.stopPropagation();rerollFruit(this)" title="点我换">'+f+'</span>'; }).join('');
+
+    card.innerHTML =
+      '<div class="card-stripe"></div>' +
+      '<div class="card-body">' +
+        '<div class="tick">✓</div>' +
+        '<div class="num">'+item.id+'</div>' +
+        '<span class="food-emoji">'+item.emoji+'</span>' +
+        '<div class="card-title">'+item.title+'</div>' +
+        flavorHtml +
+        '<div class="tags">'+sideTags+fruitTags+'</div>' +
+      '</div>';
+
+    card.onclick = function(){ selectCard(card); };
+    grid.appendChild(card);
+  });
+}
+
+function rerollFruit(tag) {
+  var cur = tag.textContent;
+  var others = FRUITS.filter(function(f){ return f !== cur; });
+  tag.textContent = others[Math.floor(Math.random()*others.length)];
+  if (selectedId !== null) updateBar();
+}
+
+function toggleFlavor(btn) {
+  var card = btn.closest('.card');
+  var btns = card.querySelectorAll('.f-btn');
+  for (var i=0;i<btns.length;i++) btns[i].classList.remove('on');
+  btn.classList.add('on');
+  if (parseInt(card.dataset.id) === selectedId) updateBar();
+}
+
+function selectCard(el) {
+  var id = parseInt(el.dataset.id);
+  if (selectedId === id) {
+    el.classList.remove('selected');
+    selectedId = null;
+    document.getElementById('bar').classList.remove('show');
+    return;
+  }
+  var cards = document.querySelectorAll('.card');
+  for (var i=0;i<cards.length;i++) cards[i].classList.remove('selected');
+  el.classList.add('selected');
+  selectedId = id;
+  updateBar();
+  document.getElementById('bar').classList.add('show');
+}
+
+function getItem(id) { for(var i=0;i<MENU.length;i++) if(MENU[i].id===id) return MENU[i]; }
+
+function updateBar() {
+  var card = document.querySelector('.card[data-id="'+selectedId+'"]');
+  if (!card) return;
+  var item = getItem(selectedId);
+  var fBtn = card.querySelector('.f-btn.on');
+  var flavor = fBtn ? fBtn.textContent : '';
+  var fruits = Array.from(card.querySelectorAll('.tag-fruit')).map(function(t){ return t.textContent; });
+  var sides = Array.from(card.querySelectorAll('.tag-side')).map(function(t){ return t.textContent; });
+  var name = item.emoji + ' ' + item.title + (flavor ? '('+flavor+')' : '');
+  var extra = sides.concat(fruits).join(' · ');
+  document.getElementById('barName').textContent = name + (extra ? ' + '+extra : '');
+}
+
+function confirmPick() {
+  if (selectedId === null) return;
+  var card = document.querySelector('.card[data-id="'+selectedId+'"]');
+  var item = getItem(selectedId);
+  var fBtn = card.querySelector('.f-btn.on');
+  var flavor = fBtn ? fBtn.textContent : '';
+  var fruits = Array.from(card.querySelectorAll('.tag-fruit')).map(function(t){ return t.textContent; });
+  var sides = Array.from(card.querySelectorAll('.tag-side')).map(function(t){ return t.textContent; });
+
+  var icons = ['🎉','🥳','🎊','✨','🌟','💫'];
+  document.getElementById('popIcon').textContent = icons[Math.floor(Math.random()*icons.length)];
+
+  var html = '🍽 <b>'+item.title+(flavor?'（'+flavor+'）':'')+'</b><br>';
+  if (sides.length) html += '配菜：'+sides.join(' ')+'<br>';
+  if (fruits.length) html += '水果：'+fruits.join(' ')+'<br>';
+  document.getElementById('popResult').innerHTML = html;
+  document.getElementById('overlay').classList.add('show');
+}
+
+function closeOverlay() { document.getElementById('overlay').classList.remove('show'); }
+function mayClose(e) { if(e.target===document.getElementById('overlay')) closeOverlay(); }
+
+buildCards();
+</script>
+</body>
+</html>
