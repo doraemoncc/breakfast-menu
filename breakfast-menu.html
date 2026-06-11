@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小学生早餐菜单 🚌</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans SC', sans-serif;
+      background: #FFF8E1;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .page-title {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .page-title h1 {
+      font-family: 'ZCOOL KuaiLe', cursive;
+      font-size: 2.8em;
+      color: #FF6B6B;
+      text-shadow: 3px 3px 0 #FFD93D;
+      margin-bottom: 8px;
+    }
+
+    .page-title p {
+      font-size: 1.1em;
+      color: #888;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .menu-card {
+      background: #fff;
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      border: 3px solid #FFD93D;
+      transition: transform 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .menu-card::before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      right: -20px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      opacity: 0.15;
+    }
+
+    .menu-card:nth-child(1)::before { background: #FF6B6B; }
+    .menu-card:nth-child(2)::before { background: #FFD93D; }
+    .menu-card:nth-child(3)::before { background: #FF6B6B; }
+    .menu-card:nth-child(4)::before { background: #FFD93D; }
+    .menu-card:nth-child(5)::before { background: #FF6B6B; }
+    .menu-card:nth-child(6)::before { background: #FFD93D; }
+
+    .menu-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .card-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.1em;
+      color: white;
+      flex-shrink: 0;
+      font-family: 'ZCOOL KuaiLe', cursive;
+    }
+
+    .menu-card:nth-child(1) .card-number { background: #FF6B6B; }
+    .menu-card:nth-child(2) .card-number { background: #FFD93D; color: #c8860a; }
+    .menu-card:nth-child(3) .card-number { background: #FF6B6B; }
+    .menu-card:nth-child(4) .card-number { background: #FFD93D; color: #c8860a; }
+    .menu-card:nth-child(5) .card-number { background: #FF6B6B; }
+    .menu-card:nth-child(6) .card-number { background: #FFD93D; color: #c8860a; }
+
+    .card-name {
+      font-family: 'ZCOOL KuaiLe', cursive;
+      font-size: 1.4em;
+      color: #333;
+    }
+
+    .food-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0;
+      font-size: 0.95em;
+      color: #555;
+    }
+
+    .food-row .emoji {
+      font-size: 1.3em;
+      flex-shrink: 0;
+    }
+
+    .food-row.main .emoji { font-size: 1.5em; }
+
+    .food-row.main {
+      font-weight: 700;
+      color: #333;
+      font-size: 1.05em;
+    }
+
+    .food-row.sub {
+      color: #777;
+      font-size: 0.9em;
+    }
+
+    .food-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .tag {
+      background: #FFF3CD;
+      border: 2px solid #FFD93D;
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 0.8em;
+      color: #c8860a;
+      font-weight: 600;
+    }
+
+    .section-label {
+      text-align: center;
+      margin: 30px auto 20px;
+      font-family: 'ZCOOL KuaiLe', cursive;
+      font-size: 1.6em;
+      color: #FF6B6B;
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .section-label::before,
+    .section-label::after {
+      content: '⭐';
+      font-size: 0.8em;
+      margin: 0 8px;
+    }
+
+    .choice-section {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .week-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .day-card {
+      background: white;
+      border-radius: 16px;
+      padding: 12px 8px;
+      text-align: center;
+      border: 2px dashed #FFD93D;
+      min-height: 100px;
+    }
+
+    .day-name {
+      font-family: 'ZCOOL KuaiLe', cursive;
+      font-size: 1.1em;
+      color: #FF6B6B;
+      margin-bottom: 8px;
+    }
+
+    .day-choice {
+      font-size: 0.85em;
+      color: #aaa;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .footer-note {
+      text-align: center;
+      margin-top: 30px;
+      color: #ccc;
+      font-size: 0.85em;
+    }
+
+    @media (max-width: 600px) {
+      .menu-grid {
+        grid-template-columns: 1fr;
+      }
+      .week-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .page-title h1 {
+        font-size: 2em;
+      }
+    }
+
+    .print-btn {
+      display: block;
+      margin: 24px auto;
+      background: #FF6B6B;
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 30px;
+      font-size: 1em;
+      font-family: 'ZCOOL KuaiLe', cursive;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(255,107,107,0.4);
+      transition: all 0.2s;
+    }
+
+    .print-btn:hover {
+      background: #ff5252;
+      transform: translateY(-2px);
+    }
+
+    @media print {
+      .print-btn { display: none; }
+      body { background: white; padding: 10px; }
+      .menu-card { box-shadow: none; border: 2px solid #FFD93D; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-title">
+    <h1>🍽️ 明天早餐吃什么？</h1>
+    <p>每晚选好，第二天元气满满！</p>
+  </div>
+
+  <button class="print-btn" onclick="window.print()">🖨️ 打印菜单</button>
+
+  <div class="menu-grid">
+    <!-- 1 -->
+    <div class="menu-card">
+      <div class="card-header">
+        <div class="card-number">1</div>
+        <div class="card-name">🍙 饭团</div>
+      </div>
+      <div class="food-row main">
+        <span class="emoji">🍙</span>
+        饭团
+        <span class="tag">肉松</span>
+        <span class="tag">鳕鱼肠</span>
+        <span class="tag">虾仁</span>
+      </div>
+      <div class="food-row sub">🍇 水果 + 🥛 温水</div>
+    </div>
+
+    <!-- 2 -->
+    <div class="menu-card">
+      <div class="card-header">
+        <div class="card-number">2</div>
+        <div class="card-name">🍗 蜜汁鸡翅</div>
+      </div>
+      <div class="food-row main">
+        <span class="emoji">🍗</span>
+        蜜汁鸡翅
+      </div>
+      <div class="food-row sub">🥣 小米粥 + 🍅 西红柿</div>
+    </div>
+
+    <!-- 3 -->
+    <div class="menu-card">
+      <div class="card-header">
+        <div class="card-number">3</div>
+        <div class="card-name">🍕 小披萨</div>
+      </div>
+      <div class="food-row main">
+        <span class="emoji">🍕</span>
+        小披萨
+        <span class="tag">大虾</span>
+        <span class="tag">鸡米花</span>
+        <span class="tag">玉米粒</span>
+        <span class="tag">芝士</span>
+      </div>
+      <div class="food-row sub">🍇 水果</div>
+    </div>
+
+    <!-- 4 -->
+    <div class="menu-card">
+      <div class="card-header">
+        <div class="card-number">4</div>
+        <div class="card-name">🥧 蛋挞套餐</div>
+      </div>
+      <div class="food-row main">
+        <span class="emoji">🥧</span>
+        蛋挞
+      </div>
+      <div class="food-row sub">🥣 小米粥 + 🍇 水果</div>
+    </div>
+
+    <!-- 5 -->
+    <div class="menu-card">
+      <div class="card-header">
+        <div class="card-number">5</div>
+        <div class="card-name">🍞 烤馒头</div>
+      </div>
+      <div class="food-row main">
+        <span class="emoji">🍞</span>
+        烤/煎馒头块 + 🧀 奶酪
+      </div>
+      <div class="food-row sub">🍳 蛋白质 + 🍇 水果</div>
+    </div>
+
+    <!-- 6 -->
+    <div class="menu-card">
+      <div class="card-header">
+        <div class="card-number">6</div>
+        <div class="card-name">🥞 糖饼</div>
+      </div>
+      <div class="food-row main">
+        <span class="emoji">🥞</span>
+        糖饼
+      </div>
+      <div class="food-row sub">🥣 小米粥</div>
+    </div>
+  </div>
+
+  <div class="choice-section">
+    <div class="section-label">📅 本周早餐计划表</div>
+    <div class="week-grid">
+      <div class="day-card">
+        <div class="day-name">周一</div>
+        <div class="day-choice">——</div>
+      </div>
+      <div class="day-card">
+        <div class="day-name">周二</div>
+        <div class="day-choice">——</div>
+      </div>
+      <div class="day-card">
+        <div class="day-name">周三</div>
+        <div class="day-choice">——</div>
+      </div>
+      <div class="day-card">
+        <div class="day-name">周四</div>
+        <div class="day-choice">——</div>
+      </div>
+      <div class="day-card">
+        <div class="day-name">周五</div>
+        <div class="day-choice">——</div>
+      </div>
+      <div class="day-card">
+        <div class="day-name">周六</div>
+        <div class="day-choice">博物馆课 ☀️</div>
+      </div>
+      <div class="day-card">
+        <div class="day-name">周日</div>
+        <div class="day-choice">——</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note">猫巴士 🚌 出品 · 每天都要好好吃早餐哦！</div>
+
+</body>
+</html>

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🌈 明天吃什么早餐？</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #FEF6E4;
+  --r: 22px;
+}
+
+body {
+  background: var(--bg);
+  font-family: 'ZCOOL XiaoWei', cursive;
+  min-height: 100vh;
+  padding-bottom: 110px;
+}
+
+/* ====== 背景气泡装饰 ====== */
+.bg-bubbles {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0;
+  overflow: hidden;
+}
+.bg-bubbles span {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.07;
+  animation: floatBubble linear infinite;
+}
+@keyframes floatBubble {
+  0%   { transform: translateY(100vh) scale(0.5); opacity: 0.07; }
+  100% { transform: translateY(-120px) scale(1.2); opacity: 0; }
+}
+
+/* ====== HEADER ====== */
+.header {
+  text-align: center;
+  padding: 30px 20px 12px;
+  position: relative; z-index: 1;
+}
+.sun {
+  font-size: 3.8rem;
+  display: inline-block;
+  animation: sunSpin 8s linear infinite;
+  filter: drop-shadow(0 4px 8px rgba(255,180,0,0.4));
+}
+@keyframes sunSpin {
+  0%,100% { transform: rotate(-8deg) scale(1); }
+  50% { transform: rotate(8deg) scale(1.08); }
+}
+.header h1 {
+  font-family: 'Fredoka One', cursive;
+  font-size: 2.4rem;
+  background: linear-gradient(135deg, #FF6B35, #FF9A3C, #FFD93D);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(2px 3px 0 rgba(255,107,53,0.25));
+  margin-top: 4px;
+}
+.header p {
+  color: #b0a090;
+  font-size: 1rem;
+  margin-top: 5px;
+  letter-spacing: 1px;
+}
+
+/* ====== GRID ====== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 18px;
+  padding: 18px 18px 24px;
+  max-width: 980px;
+  margin: 0 auto;
+  position: relative; z-index: 1;
+}
+
+/* ====== CARD ====== */
+.card {
+  background: white;
+  border-radius: var(--r);
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border: 3px solid transparent;
+  box-shadow: 0 6px 22px rgba(0,0,0,0.07), 0 2px 6px rgba(0,0,0,0.05);
+  transition: transform 0.22s cubic-bezier(.34,1.3,.64,1), box-shadow 0.22s, border-color 0.2s;
+  user-select: none;
+}
+.card:hover { transform: translateY(-5px) scale(1.015); box-shadow: 0 14px 34px rgba(0,0,0,0.12); }
+.card.selected { border-color: var(--ac); transform: translateY(-3px) scale(1.02); }
+.card.selected .tick { opacity: 1; transform: scale(1) rotate(0deg); }
+.card.selected .card-body { background: color-mix(in srgb, var(--ac) 4%, white); }
+
+/* 顶部彩条 */
+.card-top {
+  height: 10px;
+  background: var(--ac);
+  position: relative;
+}
+.card-top::after {
+  content: '';
+  position: absolute;
+  bottom: -8px; left: 0; right: 0;
+  height: 8px;
+  background: var(--ac);
+  clip-path: ellipse(52% 100% at 50% 0%);
+}
+
+/* 打勾徽章 */
+.tick {
+  position: absolute;
+  top: 16px; right: 14px;
+  width: 36px; height: 36px;
+  background: var(--ac);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; color: white;
+  opacity: 0;
+  transform: scale(0) rotate(-40deg);
+  transition: opacity 0.25s, transform 0.32s cubic-bezier(.34,1.56,.64,1);
+  z-index: 3;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+}
+
+.card-body { padding: 16px 18px 16px; border-radius: 0 0 var(--r) var(--r); transition: background 0.2s; }
+
+/* 编号 */
+.num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px;
+  background: var(--ac); color: white;
+  border-radius: 50%;
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  box-shadow: 2px 3px 0 rgba(0,0,0,0.1);
+}
+
+/* 食物图标 */
+.food-emoji {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 4px;
+  transition: transform 0.3s;
+  filter: drop-shadow(2px 3px 3px rgba(0,0,0,0.1));
+}
+.card:hover .food-emoji { transform: scale(1.12) rotate(-5deg); }
+
+/* 标题 */
+.card-title {
+  font-size: 1.3rem;
+  color: #2d2d2d;
+  font-weight: bold;
+  letter-spacing: 1px;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+/* 口味按钮 */
+.flavor-label {
+  font-size: 0.76rem;
+  color: #ccc;
+  margin: 8px 0 4px;
+}
+.flavors {
+  display: flex; flex-wrap: wrap; gap: 5px;
+}
+.f-btn {
+  background: white;
+  border: 2px solid color-mix(in srgb, var(--ac) 35%, white);
+  color: #666;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.82rem;
+  font-family: 'ZCOOL XiaoWei', cursive;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.f-btn:hover, .f-btn.on {
+  background: var(--ac); color: white; border-color: var(--ac);
+}
+
+/* 配菜 tags */
+.tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
+.tag {
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.8rem;
+  font-family: 'ZCOOL XiaoWei', cursive;
+}
+.tag-side {
+  background: color-mix(in srgb, var(--ac) 12%, white);
+  color: color-mix(in srgb, var(--ac) 75%, #333);
+  border: 1.5px solid color-mix(in srgb, var(--ac) 25%, white);
+}
+.tag-fruit {
+  background: #F0FFF4;
+  color: #2D7A3A;
+  border: 1.5px dashed #7DCA8A;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.tag-fruit:hover { background: #D4F5DB; }
+
+/* ====== 底部确认栏 ====== */
+.confirm-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: white;
+  border-top: 3px solid #FFD93D;
+  padding: 12px 20px 18px;
+  display: flex; align-items: center; gap: 12px;
+  z-index: 100;
+  box-shadow: 0 -6px 28px rgba(0,0,0,0.1);
+  transform: translateY(110%);
+  transition: transform 0.35s cubic-bezier(.34,1.3,.64,1);
+}
+.confirm-bar.show { transform: translateY(0); }
+
+.bar-info { flex: 1; }
+.bar-info .label { font-size: 0.76rem; color: #bbb; margin-bottom: 2px; }
+.bar-info .name { font-size: 1rem; color: #333; font-weight: bold; }
+.bar-info .name em { color: var(--accent-color, #FF6B35); font-style: normal; }
+
+.ok-btn {
+  background: linear-gradient(135deg, #FF6B35, #FF9A3C);
+  color: white; border: none;
+  border-radius: 30px;
+  padding: 12px 26px;
+  font-size: 1rem;
+  font-family: 'ZCOOL XiaoWei', cursive;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(255,107,53,0.4);
+  transition: transform 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
+  letter-spacing: 1px;
+}
+.ok-btn:hover { transform: scale(1.05); box-shadow: 0 6px 22px rgba(255,107,53,0.5); }
+
+/* ====== 庆祝弹窗 ====== */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(10,10,30,0.45);
+  backdrop-filter: blur(6px);
+  z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s;
+}
+.overlay.show { opacity: 1; pointer-events: all; }
+
+.popup {
+  background: white;
+  border-radius: 32px;
+  padding: 36px 28px 28px;
+  max-width: 340px; width: 90%;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+  transform: scale(0.75) translateY(30px);
+  transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+  position: relative;
+  overflow: hidden;
+}
+.overlay.show .popup { transform: scale(1) translateY(0); }
+
+/* 彩纸条装饰 */
+.popup::before {
+  content: '🎊🎉🎈🎊🎉🎈🎊';
+  position: absolute; top: 0; left: 0; right: 0;
+  font-size: 1.4rem;
+  letter-spacing: 4px;
+  background: linear-gradient(135deg,#FFD93D,#FF6B9D,#4ECDC4,#A855F7);
+  padding: 6px 0 4px;
+  border-radius: 32px 32px 0 0;
+}
+
+.pop-icon { font-size: 4.5rem; display: block; margin: 36px 0 6px; animation: popIn 0.5s ease; }
+@keyframes popIn { from { transform: scale(0.3) rotate(-20deg); } to { transform: scale(1) rotate(0); } }
+
+.pop-title { font-family: 'Fredoka One', cursive; font-size: 1.8rem; color: #FF6B35; letter-spacing: 2px; }
+
+.pop-result {
+  background: #FFF9EC;
+  border: 2px dashed #FFD93D;
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin: 14px 0;
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.9;
+  text-align: left;
+}
+.pop-result .row { display: flex; align-items: center; gap: 6px; }
+.pop-result .row .lbl { color: #bbb; font-size: 0.8rem; min-width: 38px; }
+
+.pop-msg { color: #aaa; font-size: 0.9rem; margin-bottom: 16px; }
+
+.pop-close {
+  background: linear-gradient(135deg, #4ECDC4, #2EBD9B);
+  color: white; border: none;
+  border-radius: 30px;
+  padding: 12px 34px;
+  font-size: 1rem;
+  font-family: 'ZCOOL XiaoWei', cursive;
+  cursor: pointer;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 16px rgba(78,205,196,0.4);
+}
+
+/* ====== 颜色主题 ====== */
+.c1 { --ac: #FF9A3C; }
+.c2 { --ac: #FF6B9D; }
+.c3 { --ac: #A855F7; }
+.c4 { --ac: #4ECDC4; }
+.c5 { --ac: #FFD93D; }
+.c6 { --ac: #E05C5C; }
+.c7 { --ac: #5BBFFF; }
+.c8 { --ac: #85C27E; }
+
+@media (max-width: 520px) {
+  .header h1 { font-size: 1.9rem; }
+  .grid { grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px; }
+  .card-body { padding: 12px 14px 12px; }
+  .food-emoji { font-size: 2.2rem; }
+  .card-title { font-size: 1.1rem; }
+}
+@media (max-width: 360px) {
+  .grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- 背景气泡 -->
+<div class="bg-bubbles" id="bgBubbles"></div>
+
+<!-- 顶部 -->
+<div class="header">
+  <span class="sun">☀️</span>
+  <h1>明天吃什么？</h1>
+  <p>每晚选好，明早稳稳的幸福 🌈</p>
+</div>
+
+<!-- 菜单网格 -->
+<div class="grid" id="grid"></div>
+
+<!-- 确认栏 -->
+<div class="confirm-bar" id="bar">
+  <div class="bar-info">
+    <div class="label">你选的是：</div>
+    <div class="name" id="barName">—</div>
+  </div>
+  <button class="ok-btn" onclick="confirmPick()">✅ 就这个！</button>
+</div>
+
+<!-- 庆祝弹窗 -->
+<div class="overlay" id="overlay" onclick="mayClose(event)">
+  <div class="popup" id="popup">
+    <span class="pop-icon" id="popIcon">🎉</span>
+    <div class="pop-title">选好啦！</div>
+    <div class="pop-result" id="popResult"></div>
+    <div class="pop-msg">快去睡觉吧，明早等你 😴🌙</div>
+    <button class="pop-close" onclick="closeOverlay()">好耶，去睡觉！</button>
+  </div>
+</div>
+
+<script>
+// ============ 数据 ============
+const FRUITS = ['🍎 苹果','🍊 橘子','🫐 蓝莓','🍅 西红柿','🥝 猕猴桃','🍓 草莓'];
+
+const MENU = [
+  { id:1, cls:'c1', emoji:'🍙', title:'饭团', sides:['🦐 虾仁球'], hasFruit:true },
+  { id:2, cls:'c2', emoji:'🍗', title:'蜜汁鸡翅', sides:['🍵 小米粥','🍅 西红柿'], hasFruit:false },
+  { id:3, cls:'c3', emoji:'🍕', title:'小披萨', sides:[], hasFruit:true,
+    flavors:['🍗 鸡米花口味','🥩 火腿口味'] },
+  { id:4, cls:'c4', emoji:'🍞', title:'馒头块/片', sides:['🧀 奶酪'], hasFruit:true },
+  { id:5, cls:'c5', emoji:'🥞', title:'糖饼', sides:['🥜 坚果'], hasFruit:true },
+  { id:6, cls:'c6', emoji:'🌽', title:'小玉米 + 羊肉小串', sides:[], hasFruit:true },
+  { id:7, cls:'c7', emoji:'🧇', title:'华夫饼', sides:[], hasFruit:true },
+  { id:8, cls:'c8', emoji:'🥧', title:'蛋挞', sides:[], hasFruit:true },
+];
+
+// 随机水果（2种，不重复）
+function randFruits() {
+  const arr = [...FRUITS];
+  for (let i = arr.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr.slice(0,2);
+}
+
+// ============ 渲染 ============
+let selectedId = null;
+
+function buildCards() {
+  const grid = document.getElementById('grid');
+  MENU.forEach(item => {
+    const fruits = item.hasFruit ? randFruits() : [];
+
+    const flavorHtml = item.flavors ? `
+      <div class="flavor-label">口味选择：</div>
+      <div class="flavors" onclick="event.stopPropagation()">
+        ${item.flavors.map(f=>`<button class="f-btn" onclick="toggleFlavor(this)">${f}</button>`).join('')}
+      </div>` : '';
+
+    const sideTagsHtml = item.sides.map(s=>`<span class="tag tag-side">${s}</span>`).join('');
+    const fruitTagsHtml = fruits.map(f=>`<span class="tag tag-fruit" onclick="event.stopPropagation();rerollFruit(this)" title="点我换一个">${f}</span>`).join('');
+
+    const card = document.createElement('div');
+    card.className = `card ${item.cls}`;
+    card.dataset.id = item.id;
+    card.style.setProperty('--ac', getComputedStyle(document.documentElement)
+      .getPropertyValue('--ac') || '');
+    card.onclick = () => selectCard(card);
+
+    card.innerHTML = `
+      <div class="card-top"></div>
+      <div class="card-body">
+        <div class="tick">✓</div>
+        <div class="num">${item.id}</div>
+        <span class="food-emoji">${item.emoji}</span>
+        <div class="card-title">${item.title}</div>
+        ${flavorHtml}
+        <div class="tags">
+          ${sideTagsHtml}
+          ${fruitTagsHtml}
+        </div>
+      </div>`;
+
+    grid.appendChild(card);
+  });
+}
+
+function rerollFruit(tag) {
+  const current = tag.textContent.trim();
+  const others = FRUITS.filter(f => f !== current);
+  tag.textContent = others[Math.floor(Math.random()*others.length)];
+  tag.style.transform = 'scale(1.3)';
+  setTimeout(()=>{ tag.style.transform = ''; tag.style.transition = 'transform 0.3s'; }, 150);
+  if (selectedId !== null) updateBar();
+}
+
+function toggleFlavor(btn) {
+  const card = btn.closest('.card');
+  // 同一组只能选一个
+  card.querySelectorAll('.f-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  if (parseInt(card.dataset.id) === selectedId) updateBar();
+}
+
+function selectCard(el) {
+  const id = parseInt(el.dataset.id);
+  if (selectedId === id) {
+    el.classList.remove('selected');
+    selectedId = null;
+    document.getElementById('bar').classList.remove('show');
+    return;
+  }
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedId = id;
+  updateBar();
+  document.getElementById('bar').classList.add('show');
+  // 更新底栏颜色
+  const ac = getCardAc(el);
+  document.getElementById('bar').style.borderTopColor = ac;
+  document.querySelector('.bar-info .name').style.setProperty('--accent-color', ac);
+}
+
+function getCardAc(el) {
+  return window.getComputedStyle(el).getPropertyValue('--ac').trim() || '#FF6B35';
+}
+
+function getCardData(id) { return MENU.find(m=>m.id===id); }
+
+function updateBar() {
+  const card = document.querySelector(`.card[data-id="${selectedId}"]`);
+  if (!card) return;
+  const item = getCardData(selectedId);
+  const flavor = card.querySelector('.f-btn.on')?.textContent.trim() || '';
+  const fruits = [...card.querySelectorAll('.tag-fruit')].map(t=>t.textContent.trim());
+  const sides = [...card.querySelectorAll('.tag-side')].map(t=>t.textContent.trim());
+
+  let name = item.emoji + ' ' + item.title;
+  if (flavor) name += ` (${flavor})`;
+  const extras = [...sides, ...fruits].join(' · ');
+  document.getElementById('barName').innerHTML =
+    `<em>${name}</em>${extras ? ' <span style="color:#bbb;font-size:.85rem">+ ' + extras + '</span>' : ''}`;
+}
+
+function confirmPick() {
+  if (selectedId === null) return;
+  const card = document.querySelector(`.card[data-id="${selectedId}"]`);
+  const item = getCardData(selectedId);
+  const flavor = card.querySelector('.f-btn.on')?.textContent.trim() || '';
+  const fruits = [...card.querySelectorAll('.tag-fruit')].map(t=>t.textContent.trim());
+  const sides = [...card.querySelectorAll('.tag-side')].map(t=>t.textContent.trim());
+
+  const icons = ['🎉','🥳','🎊','✨','🌟','💫'];
+  document.getElementById('popIcon').textContent = icons[Math.floor(Math.random()*icons.length)];
+
+  let html = `<div class="row"><span class="lbl">主食</span><span>${item.emoji} ${item.title}${flavor ? ' · '+flavor : ''}</span></div>`;
+  if (sides.length) html += `<div class="row"><span class="lbl">配菜</span><span>${sides.join(' · ')}</span></div>`;
+  if (fruits.length) html += `<div class="row"><span class="lbl">水果</span><span>${fruits.join(' · ')}</span></div>`;
+
+  document.getElementById('popResult').innerHTML = html;
+  document.getElementById('overlay').classList.add('show');
+}
+
+function closeOverlay() {
+  document.getElementById('overlay').classList.remove('show');
+}
+function mayClose(e) {
+  if (e.target === document.getElementById('overlay')) closeOverlay();
+}
+
+// ============ 背景气泡 ============
+function makeBubbles() {
+  const colors = ['#FF9A3C','#FF6B9D','#4ECDC4','#A855F7','#FFD93D','#5BBFFF','#85C27E'];
+  const cont = document.getElementById('bgBubbles');
+  for (let i = 0; i < 14; i++) {
+    const s = document.createElement('span');
+    const size = 40 + Math.random()*120;
+    s.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%;
+      bottom:${-size}px;
+      background:${colors[i%colors.length]};
+      animation-duration:${8+Math.random()*14}s;
+      animation-delay:${Math.random()*12}s;
+    `;
+    cont.appendChild(s);
+  }
+}
+
+buildCards();
+makeBubbles();
+</script>
+</body>
+</html>

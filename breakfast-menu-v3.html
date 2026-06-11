@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌟 明天吃什么早餐？</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --yellow: #FFD93D;
+    --orange: #FF9A3C;
+    --pink: #FF6B9D;
+    --mint: #4ECDC4;
+    --purple: #A855F7;
+    --bg: #FFF9EC;
+    --card-r: 24px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Ma Shan Zheng', cursive;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* 背景装饰星星 */
+  body::before {
+    content: "⭐🌙✨⭐🌈☀️🌟💫⭐✨";
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    font-size: 1.8rem;
+    letter-spacing: 60px;
+    opacity: 0.12;
+    pointer-events: none;
+    z-index: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    padding: 10px;
+  }
+
+  /* ===== 顶部标题 ===== */
+  .header {
+    text-align: center;
+    padding: 28px 20px 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header-mascot {
+    font-size: 3.5rem;
+    display: block;
+    animation: bounce 2s ease-in-out infinite;
+  }
+
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.2rem;
+    color: #FF6B35;
+    text-shadow: 3px 3px 0 #FFD93D, 5px 5px 0 rgba(0,0,0,0.08);
+    letter-spacing: 2px;
+    margin-top: 4px;
+  }
+
+  .header .subtitle {
+    font-size: 1.1rem;
+    color: #888;
+    margin-top: 6px;
+    letter-spacing: 1px;
+  }
+
+  /* ===== 菜单卡片网格 ===== */
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px 20px 30px;
+    max-width: 1000px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== 单张卡片 ===== */
+  .card {
+    background: white;
+    border-radius: var(--card-r);
+    padding: 22px 20px 18px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    border: 3px solid transparent;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    user-select: none;
+  }
+
+  .card:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 14px 32px rgba(0,0,0,0.13);
+  }
+
+  .card.selected {
+    border-color: var(--card-accent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--card-accent) 25%, transparent),
+                0 10px 30px rgba(0,0,0,0.12);
+    transform: translateY(-2px) scale(1.02);
+  }
+
+  .card.selected .check-badge {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+
+  /* 颜色条 */
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: var(--card-accent);
+    border-radius: var(--card-r) var(--card-r) 0 0;
+  }
+
+  /* 背景装饰圆 */
+  .card::after {
+    content: '';
+    position: absolute;
+    right: -20px; bottom: -20px;
+    width: 90px; height: 90px;
+    background: color-mix(in srgb, var(--card-accent) 10%, transparent);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  /* 打勾徽章 */
+  .check-badge {
+    position: absolute;
+    top: 12px; right: 14px;
+    width: 34px; height: 34px;
+    background: var(--card-accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    color: white;
+    opacity: 0;
+    transform: scale(0) rotate(-30deg);
+    transition: opacity 0.25s, transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 2;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  }
+
+  /* 编号 */
+  .card-num {
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    width: 32px; height: 32px;
+    background: var(--card-accent);
+    color: white;
+    border-radius: 50%;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    margin-bottom: 10px;
+    box-shadow: 2px 3px 0 rgba(0,0,0,0.12);
+  }
+
+  /* 图标区 */
+  .card-emoji {
+    font-size: 2.8rem;
+    display: block;
+    margin-bottom: 6px;
+    filter: drop-shadow(2px 3px 2px rgba(0,0,0,0.12));
+  }
+
+  .card-title {
+    font-size: 1.35rem;
+    color: #333;
+    font-weight: bold;
+    letter-spacing: 1px;
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+
+  /* 配菜 pills */
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .tag {
+    background: color-mix(in srgb, var(--card-accent) 15%, white);
+    color: color-mix(in srgb, var(--card-accent) 80%, #333);
+    border: 1.5px solid color-mix(in srgb, var(--card-accent) 30%, white);
+    border-radius: 20px;
+    padding: 3px 11px;
+    font-size: 0.82rem;
+    letter-spacing: 0.5px;
+    font-family: 'Ma Shan Zheng', cursive;
+  }
+
+  .tag.note {
+    background: #FFF3CD;
+    color: #B8860B;
+    border-color: #FFD93D;
+    font-size: 0.78rem;
+  }
+
+  /* 选项按钮（口味选择） */
+  .option-label {
+    font-size: 0.78rem;
+    color: #aaa;
+    margin-top: 10px;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+  }
+
+  .option-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .opt-btn {
+    background: white;
+    border: 2px solid color-mix(in srgb, var(--card-accent) 40%, white);
+    color: #555;
+    border-radius: 20px;
+    padding: 4px 13px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    font-family: 'Ma Shan Zheng', cursive;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+
+  .opt-btn:hover,
+  .opt-btn.active {
+    background: var(--card-accent);
+    color: white;
+    border-color: var(--card-accent);
+  }
+
+  /* ===== 底部确认栏 ===== */
+  .confirm-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: white;
+    border-top: 3px solid var(--yellow);
+    padding: 14px 24px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 100;
+    box-shadow: 0 -6px 24px rgba(0,0,0,0.1);
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.34,1.3,0.64,1);
+  }
+
+  .confirm-bar.visible {
+    transform: translateY(0);
+  }
+
+  .confirm-text {
+    flex: 1;
+    font-size: 1rem;
+    color: #555;
+    line-height: 1.4;
+  }
+
+  .confirm-text strong {
+    color: #FF6B35;
+    font-size: 1.1rem;
+  }
+
+  .confirm-btn {
+    background: linear-gradient(135deg, #FF6B35, #FF9A3C);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    padding: 12px 28px;
+    font-size: 1rem;
+    font-family: 'Ma Shan Zheng', cursive;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(255,107,53,0.4);
+    transition: transform 0.15s, box-shadow 0.15s;
+    white-space: nowrap;
+    letter-spacing: 1px;
+  }
+
+  .confirm-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(255,107,53,0.5);
+  }
+
+  /* 庆祝弹窗 */
+  .celebrate-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .celebrate-overlay.show {
+    opacity: 1; pointer-events: all;
+  }
+
+  .celebrate-box {
+    background: white;
+    border-radius: 30px;
+    padding: 36px 30px;
+    max-width: 340px; width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    transform: scale(0.8);
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  .celebrate-overlay.show .celebrate-box {
+    transform: scale(1);
+  }
+
+  .celebrate-emoji { font-size: 4rem; display: block; animation: spin 0.5s ease; }
+  @keyframes spin { from { transform: rotate(-20deg) scale(0.5); } to { transform: rotate(0deg) scale(1); } }
+
+  .celebrate-title {
+    font-size: 1.6rem;
+    color: #FF6B35;
+    margin: 10px 0 6px;
+    letter-spacing: 2px;
+  }
+
+  .celebrate-msg {
+    color: #888;
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+
+  .celebrate-result {
+    background: #FFF9EC;
+    border: 2px dashed #FFD93D;
+    border-radius: 16px;
+    padding: 14px;
+    margin: 16px 0;
+    font-size: 1rem;
+    color: #555;
+    line-height: 1.8;
+  }
+
+  .celebrate-close {
+    background: linear-gradient(135deg, #4ECDC4, #44B8B0);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    padding: 12px 32px;
+    font-size: 1rem;
+    font-family: 'Ma Shan Zheng', cursive;
+    cursor: pointer;
+    letter-spacing: 1px;
+    margin-top: 6px;
+    box-shadow: 0 4px 15px rgba(78,205,196,0.4);
+  }
+
+  /* 底部空白 */
+  .bottom-pad { height: 80px; }
+
+  /* 卡片颜色主题 */
+  .c1 { --card-accent: #FF9A3C; }
+  .c2 { --card-accent: #FF6B9D; }
+  .c3 { --card-accent: #A855F7; }
+  .c4 { --card-accent: #4ECDC4; }
+  .c5 { --card-accent: #FFD93D; }
+  .c6 { --card-accent: #FF6B35; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-mascot">🌞</span>
+  <h1>明天吃什么？</h1>
+  <p class="subtitle">睡觉前选好，明早不纠结 ✨</p>
+</div>
+
+<div class="menu-grid" id="menuGrid">
+
+  <!-- 1. 饭团 -->
+  <div class="card c1" data-id="1" onclick="selectCard(this)">
+    <div class="check-badge">✓</div>
+    <div class="card-num">1</div>
+    <span class="card-emoji">🍙</span>
+    <div class="card-title">饭团</div>
+    <div class="option-label">选口味：</div>
+    <div class="option-btns" onclick="event.stopPropagation()">
+      <button class="opt-btn" onclick="toggleOpt(this)">🥩 肉松</button>
+      <button class="opt-btn" onclick="toggleOpt(this)">🐟 鳕鱼肠</button>
+      <button class="opt-btn" onclick="toggleOpt(this)">🦐 虾仁</button>
+    </div>
+    <div class="tag-row">
+      <span class="tag">🍎 水果</span>
+      <span class="tag">💧 温水</span>
+    </div>
+  </div>
+
+  <!-- 2. 蜜汁鸡翅 -->
+  <div class="card c2" data-id="2" onclick="selectCard(this)">
+    <div class="check-badge">✓</div>
+    <div class="card-num">2</div>
+    <span class="card-emoji">🍗</span>
+    <div class="card-title">蜜汁鸡翅</div>
+    <div class="tag-row">
+      <span class="tag">🍵 小米粥</span>
+      <span class="tag">🍅 西红柿</span>
+    </div>
+  </div>
+
+  <!-- 3. 小披萨 -->
+  <div class="card c3" data-id="3" onclick="selectCard(this)">
+    <div class="check-badge">✓</div>
+    <div class="card-num">3</div>
+    <span class="card-emoji">🍕</span>
+    <div class="card-title">小披萨</div>
+    <div class="option-label">选配料：</div>
+    <div class="option-btns" onclick="event.stopPropagation()">
+      <button class="opt-btn" onclick="toggleOpt(this)">🦐 大虾</button>
+      <button class="opt-btn" onclick="toggleOpt(this)">🍗 鸡米花</button>
+      <button class="opt-btn" onclick="toggleOpt(this)">🌽 玉米粒</button>
+    </div>
+    <div class="tag-row">
+      <span class="tag">🧀 芝士</span>
+      <span class="tag">🍎 水果</span>
+    </div>
+  </div>
+
+  <!-- 4. 蛋挞 -->
+  <div class="card c4" data-id="4" onclick="selectCard(this)">
+    <div class="check-badge">✓</div>
+    <div class="card-num">4</div>
+    <span class="card-emoji">🥧</span>
+    <div class="card-title">蛋挞</div>
+    <div class="tag-row">
+      <span class="tag">🍵 小米粥</span>
+      <span class="tag">🍎 水果</span>
+    </div>
+  </div>
+
+  <!-- 5. 烤/煎馒头 -->
+  <div class="card c5" data-id="5" onclick="selectCard(this)">
+    <div class="check-badge">✓</div>
+    <div class="card-num">5</div>
+    <span class="card-emoji">🍞</span>
+    <div class="card-title">烤馒头 / 煎馒头片</div>
+    <div class="option-label">做法：</div>
+    <div class="option-btns" onclick="event.stopPropagation()">
+      <button class="opt-btn" onclick="toggleOpt(this)">🔥 烤馒头块</button>
+      <button class="opt-btn" onclick="toggleOpt(this)">🥞 煎馒头片</button>
+    </div>
+    <div class="tag-row">
+      <span class="tag">🧀 奶酪</span>
+      <span class="tag">🍎 水果</span>
+      <span class="tag note">⚡ 记得搭蛋白质</span>
+    </div>
+  </div>
+
+  <!-- 6. 糖饼 -->
+  <div class="card c6" data-id="6" onclick="selectCard(this)">
+    <div class="check-badge">✓</div>
+    <div class="card-num">6</div>
+    <span class="card-emoji">🥞</span>
+    <div class="card-title">糖饼</div>
+    <div class="tag-row">
+      <span class="tag">🍵 小米粥</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="bottom-pad"></div>
+
+<!-- 底部确认栏 -->
+<div class="confirm-bar" id="confirmBar">
+  <div class="confirm-text">
+    已选：<strong id="selectedName">-</strong>
+  </div>
+  <button class="confirm-btn" onclick="confirmChoice()">✅ 就这个！</button>
+</div>
+
+<!-- 庆祝弹窗 -->
+<div class="celebrate-overlay" id="celebrateOverlay" onclick="closeOverlay(event)">
+  <div class="celebrate-box">
+    <span class="celebrate-emoji" id="celebEmoji">🎉</span>
+    <div class="celebrate-title">太棒了！</div>
+    <div class="celebrate-result" id="celebResult"></div>
+    <div class="celebrate-msg">晚安 🌙 明早起来就能吃到啦～</div>
+    <button class="celebrate-close" onclick="closeOverlay()">好耶！去睡觉 😴</button>
+  </div>
+</div>
+
+<script>
+  const menuData = {
+    1: { emoji: '🍙', name: '饭团' },
+    2: { emoji: '🍗', name: '蜜汁鸡翅 + 小米粥 + 西红柿' },
+    3: { emoji: '🍕', name: '小披萨' },
+    4: { emoji: '🥧', name: '蛋挞 + 小米粥 + 水果' },
+    5: { emoji: '🍞', name: '烤/煎馒头 + 奶酪 + 水果' },
+    6: { emoji: '🥞', name: '糖饼 + 小米粥' },
+  };
+
+  const celebEmojis = ['🎊','🎉','🥳','✨','🌟','🍀'];
+
+  let selectedCard = null;
+
+  function selectCard(el) {
+    // 取消之前选中
+    if (selectedCard && selectedCard !== el) {
+      selectedCard.classList.remove('selected');
+    }
+    el.classList.toggle('selected');
+    selectedCard = el.classList.contains('selected') ? el : null;
+
+    const bar = document.getElementById('confirmBar');
+    const nameEl = document.getElementById('selectedName');
+
+    if (selectedCard) {
+      const id = parseInt(el.dataset.id);
+      const base = menuData[id];
+      // 收集已选口味
+      const activeOpts = [...el.querySelectorAll('.opt-btn.active')].map(b => b.textContent.trim());
+      let displayName = base.emoji + ' ' + base.name;
+      if (activeOpts.length > 0) displayName += '（' + activeOpts.join(' + ') + '）';
+      nameEl.textContent = displayName;
+      bar.classList.add('visible');
+    } else {
+      bar.classList.remove('visible');
+    }
+  }
+
+  function toggleOpt(btn) {
+    btn.classList.toggle('active');
+    // 更新底栏文字（如果卡片已选中）
+    const card = btn.closest('.card');
+    if (card.classList.contains('selected')) {
+      const id = parseInt(card.dataset.id);
+      const base = menuData[id];
+      const activeOpts = [...card.querySelectorAll('.opt-btn.active')].map(b => b.textContent.trim());
+      let displayName = base.emoji + ' ' + base.name;
+      if (activeOpts.length > 0) displayName += '（' + activeOpts.join(' + ') + '）';
+      document.getElementById('selectedName').textContent = displayName;
+    }
+  }
+
+  function confirmChoice() {
+    if (!selectedCard) return;
+    const id = parseInt(selectedCard.dataset.id);
+    const base = menuData[id];
+    const activeOpts = [...selectedCard.querySelectorAll('.opt-btn.active')].map(b => b.textContent.trim());
+    const tags = [...selectedCard.querySelectorAll('.tag')].map(t => t.textContent.trim());
+
+    let resultLines = [base.emoji + ' ' + base.name];
+    if (activeOpts.length > 0) resultLines.push('口味：' + activeOpts.join(' + '));
+    if (tags.length > 0) resultLines.push('搭配：' + tags.join(' '));
+
+    document.getElementById('celebResult').innerHTML = resultLines.join('<br>');
+    document.getElementById('celebEmoji').textContent = celebEmojis[Math.floor(Math.random() * celebEmojis.length)];
+    document.getElementById('celebrateOverlay').classList.add('show');
+  }
+
+  function closeOverlay(e) {
+    if (!e || e.target === document.getElementById('celebrateOverlay') || !e.target) {
+      document.getElementById('celebrateOverlay').classList.remove('show');
+    }
+  }
+</script>
+</body>
+</html>
